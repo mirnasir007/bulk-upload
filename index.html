@@ -78,6 +78,19 @@
       </div>
     </div>
 
+    <div class="form-row">
+      <div class="form-group">
+        <label>Country of Origin *</label>
+        <select id="countryDD">
+          <option value="Bangladesh">Bangladesh</option>
+          <option value="Pakistan" selected>Pakistan</option>
+          <option value="India">India</option>
+          <option value="China">China</option>
+          <option value="UAE">UAE</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+    </div>
     <hr>
     
     <div class="form-group">
@@ -140,6 +153,9 @@
             populateDropdown('subCategoryDD', data.subCategories, 'CODE', 'SUB_CATEGORY_NAME');
             populateDropdown('brandDD', data.brands, 'CODE', 'BRAND_NAME'); 
             populateDropdown('vendorDD', data.vendors, 'VENDOR_CODE', 'VENDOR_NAME');
+            
+            // Initialize Select2 for the static Country Dropdown
+            $('#countryDD').select2({ width: '100%' });
             
             document.getElementById('excelFile').disabled = false;
             document.getElementById('previewBtn').style.display = 'block';
@@ -270,12 +286,16 @@
       let category = document.getElementById('categoryDD').value;
       let subCategory = document.getElementById('subCategoryDD').value;
       let brand = document.getElementById('brandDD').value;
+      
       let vendorSelect = document.getElementById('vendorDD');
       let vendorCode = vendorSelect.value;
       let vendorName = vendorSelect.options[vendorSelect.selectedIndex] ? vendorSelect.options[vendorSelect.selectedIndex].text.split(" (")[0] : "";
+      
+      // Grab Country Value
+      let countryValue = document.getElementById('countryDD').value;
 
-      if (!subCategory || !brand || !vendorCode) {
-        alert("Please ensure Sub Category, Brand, and Vendor are selected!");
+      if (!subCategory || !brand || !vendorCode || !countryValue) {
+        alert("Please ensure Sub Category, Brand, Vendor, and Country are selected!");
         return;
       }
 
@@ -294,7 +314,7 @@
 
         let payload = {
           "WSP": 0, "MIN_STK_QTY": 0, "SHELF_LIFE_DAYS": 0, "REORDER_QTY": 0, "OPENING_STK": 0, 
-          "CONVERTION_RATE": 1, "PUR_CONVERTION_RATE": 1, "COUNTRY_OF_ORGIN": "Bangladesh", 
+          "CONVERTION_RATE": 1, "PUR_CONVERTION_RATE": 1, "COUNTRY_OF_ORGIN": countryValue, 
           "SAL_VAT_PERCENT": 7.5, "PUR_VAT_PERCENT": 0, "SD_PERCENT": 0, "SDC_VAT_CODE": "", 
           "SDC_SD_CODE": "", "IS_MANAGE_STOCK": 1, "UserBarcodeList": [], 
           "MANUFACTURER_CODE": "00001", "DEPARTMENT_CODE": "0001", "SUB_DEPARTMENT_CODE": "0001", 

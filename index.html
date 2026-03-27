@@ -43,6 +43,13 @@
     td { padding: 8px; border: 1px solid #ddd; text-align: center; }
     
     #progressMsg { display: none; color: #ff9800; font-weight: bold; font-size: 18px; text-align: center; margin-top: 15px; }
+
+    /* Paste Grid Styles */
+    .paste-container { overflow-x: auto; max-height: 250px; border: 2px dashed #00bcd4; border-radius: 4px; background: #fff; margin-top: 15px; }
+    #pasteGridTable { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+    #pasteGridTable thead th { position: sticky; top: 0; background-color: #f4f7f6; color: #333; z-index: 1; border: 1px solid #ccc; font-size: 14px; text-align: left; }
+    #pasteGridTable td { border: 1px solid #eee; padding: 8px; text-align: left; font-size: 14px; outline: none; }
+    #pasteGridTable td[contenteditable="true"]:focus { background-color: #e0f7fa; border: 1px solid #00bcd4; }
   </style>
 </head>
 <body>
@@ -94,12 +101,32 @@
     <hr>
     
     <div class="form-group">
-      <label>Upload Excel File (Columns: NAME, CPU, MRP) 📊</label>
+      <label>Upload Excel File OR Paste Data 📊</label>
       <div class="action-area">
         <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="flex: 1;" disabled>
         <a href="data:text/csv;charset=utf-8,NAME,CPU,MRP%0ASample Dress 1,1500,2500%0ASample Bag 2,800,1200" download="Sample_Products.csv" class="btn btn-sample">
           📥 Download Sample File
         </a>
+      </div>
+
+      <!-- New Paste Grid Area -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px;">
+        <label style="font-size: 14px; color: #666; display: block; margin-bottom: 0;">Or paste directly from Excel/Sheets (Click any box below & press Ctrl+V):</label>
+        <button type="button" class="btn" style="background-color: #f44336; padding: 6px 12px; font-size: 13px;" onclick="clearPasteGrid()">🗑️ Clear Grid</button>
+      </div>
+      <div class="paste-container" style="margin-top: 5px;">
+        <table id="pasteGridTable">
+          <thead>
+            <tr>
+              <th>NAME</th>
+              <th>CPU</th>
+              <th>MRP</th>
+            </tr>
+          </thead>
+          <tbody id="pasteGridBody">
+            <!-- Empty rows initialized via JS -->
+          </tbody>
+        </table>
       </div>
       
       <button id="previewBtn" class="btn btn-upload" style="background-color: #ff9800;" onclick="previewExcelData()">
@@ -143,6 +170,9 @@
     let globalExcelData = [];
 
     window.onload = function() {
+      initEmptyGrid(5);
+      setupPasteListener();
+
       fetch(SCRIPT_URL + "?action=getDropdowns")
         .then(res => res.json())
         .then(data => {
@@ -154,7 +184,6 @@
             populateDropdown('brandDD', data.brands, 'CODE', 'BRAND_NAME'); 
             populateDropdown('vendorDD', data.vendors, 'VENDOR_CODE', 'VENDOR_NAME');
             
-            // Initialize Select2 for the static Country Dropdown
             $('#countryDD').select2({ width: '100%' });
             
             document.getElementById('excelFile').disabled = false;
@@ -169,6 +198,71 @@
           document.getElementById('statusMsg').innerHTML = "❌ Network Error while loading data from POS.";
         });
     };
+
+    function initEmptyGrid(rowCount) {
+      let tbody = document.getElementById('pasteGridBody');
+      tbody.innerHTML = '';
+      for(let i = 0; i < rowCount; i++) {
+        tbody.innerHTML += `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`;
+      }
+    }
+
+    function clearPasteGrid() {
+      initEmptyGrid(5);
+      document.getElementById('excelFile').value = "";
+      document.getElementById('previewBody').innerHTML = "";
+      document.getElementById('previewSection').style.display = 'none';
+    }
+
+    function setupPasteListener() {
+      document.getElementById('pasteGridTable').addEventListener('paste', function(e) {
+        e.preventDefault();
+        let text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        let rows = text.trim().split('\n');
+        
+        let tbody = document.getElementById('pasteGridBody');
+        
+        let existingRows = tbody.querySelectorAll('tr');
+        existingRows.forEach(tr => {
+            let cells = tr.querySelectorAll('td');
+            if (cells.length >= 3) {
+                let isEmpty = cells[0].innerText.trim() === '' && cells[1].innerText.trim() === '' && cells[2].innerText.trim() === '';
+                if (isEmpty) {
+                    tr.remove();
+                }
+            }
+        });
+
+        let startIndex = 0;
+        if(rows.length > 0 && (rows[0].toUpperCase().includes('NAME') || rows[0].toUpperCase().includes('CPU'))) {
+            startIndex = 1;
+        }
+
+        let newHtml = '';
+        rows.forEach((row, index) => {
+            if(index >= startIndex) {
+                let cols = row.split('\t');
+                if(cols.length > 0 && cols[0].trim() !== '') { 
+                    let name = cols[0] ? cols[0].trim() : "";
+                    let cpu = cols[1] ? cols[1].trim() : "0";
+                    let mrp = cols[2] ? cols[2].trim() : "0";
+                    newHtml += `<tr><td contenteditable="true">${name}</td><td contenteditable="true">${cpu}</td><td contenteditable="true">${mrp}</td></tr>`;
+                }
+            }
+        });
+
+        for(let i = 0; i < 3; i++) {
+            newHtml += `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`;
+        }
+
+        tbody.insertAdjacentHTML('beforeend', newHtml);
+        document.getElementById('excelFile').value = "";
+      });
+
+      document.getElementById('excelFile').addEventListener('change', function() {
+        initEmptyGrid(5);
+      });
+    }
 
     function populateDropdown(elementId, list, codeKey, nameKey) {
       let dd = document.getElementById(elementId);
@@ -193,8 +287,24 @@
 
     function previewExcelData() {
       let fileInput = document.getElementById('excelFile');
-      if (!fileInput.files.length) {
-        alert("Please select an Excel file first!");
+      let pastedData = [];
+      
+      let gridRows = document.querySelectorAll('#pasteGridBody tr');
+      gridRows.forEach(row => {
+          let cells = row.querySelectorAll('td');
+          if(cells.length >= 3) {
+              let name = cells[0].innerText.trim();
+              let cpu = cells[1].innerText.trim();
+              let mrp = cells[2].innerText.trim();
+              
+              if(name !== '' || cpu !== '' || mrp !== '') {
+                  pastedData.push({ NAME: name, CPU: cpu, MRP: mrp });
+              }
+          }
+      });
+
+      if (!fileInput.files.length && pastedData.length === 0) {
+        alert("Please select an Excel file OR paste data into the grid first!");
         return;
       }
 
@@ -214,67 +324,79 @@
              if(textData && textData.length < 20) lastBarcode = textData.replace(/['"]/g, '');
            }
 
-           let file = fileInput.files[0];
-           let reader = new FileReader();
-
-           reader.onload = function(e) {
-             let data = new Uint8Array(e.target.result);
-             let workbook = XLSX.read(data, {type: 'array'});
-             let firstSheetName = workbook.SheetNames[0];
-             let worksheet = workbook.Sheets[firstSheetName];
-             let json = XLSX.utils.sheet_to_json(worksheet);
-             
-             if (json.length === 0) {
-               alert("The Excel file is empty!");
-               btn.innerHTML = originalBtnText;
-               btn.disabled = false;
-               return;
-             }
-
-             globalExcelData = json;
-             let tbody = document.getElementById('previewBody');
-             tbody.innerHTML = "";
-             let counter = 1;
-
-             json.forEach((row, index) => {
-               let tr = document.createElement('tr');
-               tr.id = "row-" + index;
-               
-               let currentBarcode = lastBarcode.replace(/\d+$/, function(n){ 
-                   return String(parseInt(n, 10) + counter).padStart(n.length, '0'); 
-               });
-               
-               let finalBarcode = row.Barcode || row.SKU || currentBarcode;
-               row.FINAL_BARCODE = finalBarcode; 
-
-               let name = row.NAME || row.Name || "";
-               let cpu = row.CPU || row.BUY_PRICE || 0;
-               let mrp = row.MRP || row.SALE_PRICE || 0;
-
-               tr.innerHTML = `
-                 <td style="font-weight: bold; color: #d32f2f;">${finalBarcode}</td>
-                 <td style="text-align: left;">${name}</td>
-                 <td></td>
-                 <td>${cpu}</td>
-                 <td>${mrp}</td>
-                 <td id="status-${index}" style="font-weight:bold; color:gray;">Pending</td>
-               `;
-               tbody.appendChild(tr);
-               counter++; 
-             });
-
-             document.getElementById('previewSection').style.display = 'block';
-             btn.innerHTML = "🔄 Preview Updated";
-             btn.disabled = false;
-           };
-
-           reader.readAsArrayBuffer(file);
+           if (fileInput.files.length > 0) {
+               let file = fileInput.files[0];
+               let reader = new FileReader();
+               reader.onload = function(e) {
+                 let data = new Uint8Array(e.target.result);
+                 let workbook = XLSX.read(data, {type: 'array'});
+                 let firstSheetName = workbook.SheetNames[0];
+                 let worksheet = workbook.Sheets[firstSheetName];
+                 let json = XLSX.utils.sheet_to_json(worksheet);
+                 renderDataToPreview(json, lastBarcode, btn, originalBtnText);
+               };
+               reader.readAsArrayBuffer(file);
+           } else {
+               renderDataToPreview(pastedData, lastBarcode, btn, originalBtnText);
+           }
         })
         .catch(err => {
            alert("Failed to fetch Last Barcode from POS!");
            btn.innerHTML = originalBtnText;
            btn.disabled = false;
         });
+    }
+
+    function renderDataToPreview(json, lastBarcode, btn, originalBtnText) {
+      if (json.length === 0) {
+        alert("The data is empty!");
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
+        return;
+      }
+
+      globalExcelData = json;
+      let tbody = document.getElementById('previewBody');
+      tbody.innerHTML = "";
+      let counter = 1;
+
+      json.forEach((row, index) => {
+        let tr = document.createElement('tr');
+        tr.id = "row-" + index;
+        
+        let currentBarcode = lastBarcode.replace(/\d+$/, function(n){ 
+            return String(parseInt(n, 10) + counter).padStart(n.length, '0'); 
+        });
+        
+        let finalBarcode = row.Barcode || row.SKU || currentBarcode;
+        row.FINAL_BARCODE = finalBarcode; 
+
+        let name = row.NAME || row.Name || "";
+        let cpu = row.CPU || row.BUY_PRICE || 0;
+        let mrp = row.MRP || row.SALE_PRICE || 0;
+
+        tr.innerHTML = `
+          <td style="font-weight: bold; color: #d32f2f;">${finalBarcode}</td>
+          <td style="text-align: left;">${name}</td>
+          <td></td>
+          <td>${cpu}</td>
+          <td>${mrp}</td>
+          <td id="status-${index}" style="font-weight:bold; color:gray;">Pending</td>
+        `;
+        tbody.appendChild(tr);
+        counter++; 
+      });
+
+      document.getElementById('previewSection').style.display = 'block';
+      document.getElementById('actionButtons').style.display = 'flex';
+      document.getElementById('saveToPosBtn').style.display = 'inline-block';
+      
+      setTimeout(() => {
+        document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+
+      btn.innerHTML = "✅ Preview Updated";
+      btn.disabled = false;
     }
 
     async function startUploadProcess() {
@@ -291,7 +413,6 @@
       let vendorCode = vendorSelect.value;
       let vendorName = vendorSelect.options[vendorSelect.selectedIndex] ? vendorSelect.options[vendorSelect.selectedIndex].text.split(" (")[0] : "";
       
-      // Grab Country Value
       let countryValue = document.getElementById('countryDD').value;
 
       if (!subCategory || !brand || !vendorCode || !countryValue) {
@@ -360,6 +481,7 @@
       progressMsg.style.color = "#4CAF50";
       
       document.getElementById('actionButtons').style.display = 'flex';
+      document.getElementById('saveToPosBtn').style.display = 'none';
       
       setTimeout(() => {
         downloadPreviewExcel();

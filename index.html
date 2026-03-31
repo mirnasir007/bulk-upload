@@ -44,7 +44,6 @@
     
     #progressMsg { display: none; color: #ff9800; font-weight: bold; font-size: 18px; text-align: center; margin-top: 15px; }
 
-    /* Paste Grid Styles */
     .paste-container { overflow-x: auto; max-height: 250px; border: 2px dashed #00bcd4; border-radius: 4px; background: #fff; margin-top: 15px; }
     #pasteGridTable { width: 100%; border-collapse: collapse; margin-bottom: 0; }
     #pasteGridTable thead th { position: sticky; top: 0; background-color: #f4f7f6; color: #333; z-index: 1; border: 1px solid #ccc; font-size: 14px; text-align: left; }
@@ -57,7 +56,7 @@
   <div class="container">
     <h2>POS Bulk Product Uploader</h2>
     
-    <div id="statusMsg" class="loader">Loading Live POS Data... Please Wait ⏳</div>
+    <div id="statusMsg" class="loader">Loading Live POS Data... Please Wait &#8987;</div>
 
     <div class="form-row">
       <div class="form-group">
@@ -74,11 +73,6 @@
     </div>
 
     <div class="form-row">
-      <div class="form-group">
-        <label>Select Brand *</label>
-        <select id="brandDD" disabled><option>Loading...</option></select>
-      </div>
-
       <div class="form-group">
         <label>Select Vendor *</label>
         <select id="vendorDD" disabled><option>Loading...</option></select>
@@ -100,52 +94,55 @@
     </div>
     <hr>
     
-    <div class="form-group">
-      <label>Upload Excel File OR Paste Data 📊</label>
-      <div class="action-area">
-        <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="flex: 1;" disabled>
-        <a href="data:text/csv;charset=utf-8,NAME,CPU,MRP%0ASample Dress 1,1500,2500%0ASample Bag 2,800,1200" download="Sample_Products.csv" class="btn btn-sample">
-          📥 Download Sample File
-        </a>
-      </div>
+    <div id="uploadSectionContainer" style="display: none;">
+      <div class="form-group">
+        <label>Upload Excel File OR Paste Data &#128202;</label>
+        <div class="action-area">
+          <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" style="flex: 1;" disabled>
+          <a href="data:text/csv;charset=utf-8,NAME,CPU,MRP,QTY,BRAND%0ASample Dress 1,1500,2500,10,AAFREEN (0098)%0ASample Bag 2,800,1200,5,AGHA NOOR (0003)" download="Sample_Products.csv" class="btn btn-sample">
+            Download Sample File
+          </a>
+        </div>
 
-      <!-- New Paste Grid Area -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px;">
-        <label style="font-size: 14px; color: #666; display: block; margin-bottom: 0;">Or paste directly from Excel/Sheets (Click any box below & press Ctrl+V):</label>
-        <button type="button" class="btn" style="background-color: #f44336; padding: 6px 12px; font-size: 13px;" onclick="clearPasteGrid()">🗑️ Clear Grid</button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px;">
+          <label style="font-size: 14px; color: #666; display: block; margin-bottom: 0;">Or paste directly from Excel/Sheets (Click any box below & press Ctrl+V):</label>
+          <button type="button" class="btn" style="background-color: #f44336; padding: 6px 12px; font-size: 13px;" onclick="clearPasteGrid()">&#128465;&#65039; Clear Grid</button>
+        </div>
+        <div class="paste-container" style="margin-top: 5px;">
+          <table id="pasteGridTable">
+            <thead>
+              <tr>
+                <th>NAME</th>
+                <th>CPU</th>
+                <th>MRP</th>
+                <th>QTY</th>
+                <th>BRAND</th>
+              </tr>
+            </thead>
+            <tbody id="pasteGridBody">
+            </tbody>
+          </table>
+        </div>
+        
+        <button id="previewBtn" class="btn btn-upload" style="background-color: #ff9800;" onclick="previewExcelData()">
+          Preview Data
+        </button>
       </div>
-      <div class="paste-container" style="margin-top: 5px;">
-        <table id="pasteGridTable">
-          <thead>
-            <tr>
-              <th>NAME</th>
-              <th>CPU</th>
-              <th>MRP</th>
-            </tr>
-          </thead>
-          <tbody id="pasteGridBody">
-            <!-- Empty rows initialized via JS -->
-          </tbody>
-        </table>
-      </div>
-      
-      <button id="previewBtn" class="btn btn-upload" style="background-color: #ff9800;" onclick="previewExcelData()">
-        👁️ Preview Data
-      </button>
-    </div>
+    </div> 
 
     <div id="previewSection">
-      <h3 style="color: #333; text-align: center; margin-top: 0;">📄 Data Preview</h3>
+      <h3 style="color: #333; text-align: center; margin-top: 0;">&#128196; Data Preview</h3>
       <div style="overflow-x: auto;">
         <table id="previewTable">
           <thead>
             <tr>
-              <th>Barcode</th>
-              <th>Name</th>
-              <th>Qty</th>
-              <th>CPU</th>
-              <th>MRP</th>
-              <th>Status</th>
+              <th style="width: 12%;">Barcode</th>
+              <th style="width: 25%;">Name</th>
+              <th style="width: 8%;">Qty</th>
+              <th style="width: 10%;">CPU</th>
+              <th style="width: 10%;">MRP</th>
+              <th style="width: 25%;">Brand</th>
+              <th style="width: 10%;">Status</th>
             </tr>
           </thead>
           <tbody id="previewBody"></tbody>
@@ -154,10 +151,16 @@
       
       <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;" id="actionButtons">
         <button id="downloadPreviewBtn" class="btn" style="background-color: #4CAF50;" onclick="downloadPreviewExcel()">
-          📥 Download Excel File
+         Download Excel File
         </button>
         <button id="saveToPosBtn" class="btn" style="background-color: #00bcd4;" onclick="startUploadProcess()">
-          ☁️ Save To POS
+          Save To POS
+        </button>
+        <button id="addQtyBtn" class="btn" style="background-color: #673ab7; display: none;" onclick="processAddQty()">
+          &#128230; Add QTY
+        </button>
+        <button id="showChannelBtn" class="btn" style="background-color: #E91E63; display: none;" onclick="openChallanPdf()">
+          &#128195; Show Channel
         </button>
       </div>
       
@@ -168,34 +171,89 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuZaImIlFPwqjVdVZ-DX0ZKweSfRYylj9rEGaAXvc8feIanuU2385Unh8Rt12zDBj-/exec"; 
     let globalExcelData = [];
+    let globalBrands = []; 
+    let undoStack = [];
+    let redoStack = [];
+
+    function saveGridState() {
+      let tbody = document.getElementById('pasteGridBody').innerHTML;
+      if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== tbody) {
+        undoStack.push(tbody);
+        redoStack = []; 
+      }
+    }
 
     window.onload = function() {
       initEmptyGrid(5);
+      saveGridState(); 
       setupPasteListener();
+      
+      document.getElementById('pasteGridTable').addEventListener('input', function(e) {
+        let target = e.target;
+        if (target.tagName === 'TD' && target.isContentEditable) {
+            let tr = target.parentElement;
+            let cellIndex = Array.from(tr.children).indexOf(target);
+            
+            if (cellIndex === 1 || cellIndex === 2 || cellIndex === 3) {
+                let originalText = target.innerText;
+                let sanitizedText = originalText.replace(/[^0-9.]/g, ''); 
+                
+                if (originalText !== sanitizedText) {
+                    target.innerText = sanitizedText;
+                    let selection = window.getSelection();
+                    let range = document.createRange();
+                    range.selectNodeContents(target);
+                    range.collapse(false);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }
+        }
+      });
+
+      document.getElementById('pasteGridTable').addEventListener('focusout', function(e) {
+        if (e.target.tagName === 'TD' && e.target.isContentEditable) {
+           saveGridState();
+        }
+      });
 
       fetch(SCRIPT_URL + "?action=getDropdowns")
         .then(res => res.json())
         .then(data => {
           if(data.success) {
             document.getElementById('statusMsg').className = "success";
-            document.getElementById('statusMsg').innerHTML = "✅ Live POS Data Loaded Successfully!";
+            document.getElementById('statusMsg').innerHTML = "&#9989; Live POS Data Loaded Successfully!";
+            
+            globalBrands = data.brands || []; 
             
             populateDropdown('subCategoryDD', data.subCategories, 'CODE', 'SUB_CATEGORY_NAME');
-            populateDropdown('brandDD', data.brands, 'CODE', 'BRAND_NAME'); 
             populateDropdown('vendorDD', data.vendors, 'VENDOR_CODE', 'VENDOR_NAME');
             
             $('#countryDD').select2({ width: '100%' });
             
             document.getElementById('excelFile').disabled = false;
             document.getElementById('previewBtn').style.display = 'block';
+            
+            $('#subCategoryDD, #vendorDD').on('change', function() {
+              let subCat = $('#subCategoryDD').val();
+              let vendor = $('#vendorDD').val();
+              
+              if (subCat && subCat !== "" && subCat !== "Loading..." && vendor && vendor !== "" && vendor !== "Loading...") {
+                document.getElementById('uploadSectionContainer').style.display = 'block';
+              } else {
+                document.getElementById('uploadSectionContainer').style.display = 'none';
+                clearPasteGrid(); 
+              }
+            });
+
           } else {
             document.getElementById('statusMsg').className = "error";
-            document.getElementById('statusMsg').innerHTML = "❌ Error: " + data.message;
+            document.getElementById('statusMsg').innerHTML = "&#10060; Error: " + data.message;
           }
         })
         .catch(err => {
           document.getElementById('statusMsg').className = "error";
-          document.getElementById('statusMsg').innerHTML = "❌ Network Error while loading data from POS.";
+          document.getElementById('statusMsg').innerHTML = "&#10060; Network Error while loading data from POS.";
         });
     };
 
@@ -203,12 +261,13 @@
       let tbody = document.getElementById('pasteGridBody');
       tbody.innerHTML = '';
       for(let i = 0; i < rowCount; i++) {
-        tbody.innerHTML += `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`;
+        tbody.innerHTML += `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`;
       }
     }
 
     function clearPasteGrid() {
       initEmptyGrid(5);
+      saveGridState(); 
       document.getElementById('excelFile').value = "";
       document.getElementById('previewBody').innerHTML = "";
       document.getElementById('previewSection').style.display = 'none';
@@ -216,51 +275,160 @@
 
     function setupPasteListener() {
       document.getElementById('pasteGridTable').addEventListener('paste', function(e) {
-        e.preventDefault();
-        let text = (e.originalEvent || e).clipboardData.getData('text/plain');
-        let rows = text.trim().split('\n');
+        let clipboardData = e.clipboardData || window.clipboardData;
+        let text = clipboardData.getData('text/plain');
+        if (!text) return;
+        
+        let cleanText = text.trim();
+        let isMultiCell = cleanText.indexOf('\t') !== -1 || cleanText.indexOf('\n') !== -1;
+        
+        if (!isMultiCell) {
+            e.preventDefault(); 
+            if (document.queryCommandSupported('insertText')) {
+                document.execCommand('insertText', false, cleanText);
+            } else {
+                let selection = window.getSelection();
+                if (selection.rangeCount) {
+                    let range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(document.createTextNode(cleanText));
+                    range.collapse(false);
+                }
+            }
+            setTimeout(() => {
+                let targetTd = document.activeElement;
+                if(targetTd && targetTd.tagName === 'TD') {
+                    let innerText = targetTd.innerText;
+                    targetTd.innerHTML = ''; 
+                    targetTd.innerText = innerText.trim();
+                }
+                saveGridState();
+            }, 10);
+            return; 
+        }
+
+        e.preventDefault(); 
+        let rows = text.replace(/\r/g, '').split('\n');
+        if (rows[rows.length - 1] === "") {
+            rows.pop(); 
+        }
         
         let tbody = document.getElementById('pasteGridBody');
+        let activeCell = document.activeElement;
         
-        let existingRows = tbody.querySelectorAll('tr');
-        existingRows.forEach(tr => {
-            let cells = tr.querySelectorAll('td');
-            if (cells.length >= 3) {
-                let isEmpty = cells[0].innerText.trim() === '' && cells[1].innerText.trim() === '' && cells[2].innerText.trim() === '';
-                if (isEmpty) {
-                    tr.remove();
-                }
-            }
-        });
+        let startRowIndex = -1;
+        let startColIndex = -1;
+        
+        if (activeCell && activeCell.tagName === 'TD' && activeCell.closest('#pasteGridBody')) {
+            let tr = activeCell.parentElement;
+            startRowIndex = Array.from(tbody.children).indexOf(tr);
+            startColIndex = Array.from(tr.children).indexOf(activeCell);
+        } else {
+            startRowIndex = tbody.children.length;
+            startColIndex = 0;
+        }
 
-        let startIndex = 0;
+        let dataStartIndex = 0;
         if(rows.length > 0 && (rows[0].toUpperCase().includes('NAME') || rows[0].toUpperCase().includes('CPU'))) {
-            startIndex = 1;
+            dataStartIndex = 1; 
         }
 
-        let newHtml = '';
-        rows.forEach((row, index) => {
-            if(index >= startIndex) {
-                let cols = row.split('\t');
-                if(cols.length > 0 && cols[0].trim() !== '') { 
-                    let name = cols[0] ? cols[0].trim() : "";
-                    let cpu = cols[1] ? cols[1].trim() : "0";
-                    let mrp = cols[2] ? cols[2].trim() : "0";
-                    newHtml += `<tr><td contenteditable="true">${name}</td><td contenteditable="true">${cpu}</td><td contenteditable="true">${mrp}</td></tr>`;
+        for (let i = dataStartIndex; i < rows.length; i++) {
+            let cols = rows[i].split('\t');
+            let targetRowIndex = startRowIndex + (i - dataStartIndex);
+            
+            while (tbody.children.length <= targetRowIndex) {
+                tbody.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`);
+            }
+            
+            let targetRow = tbody.children[targetRowIndex];
+            
+            for (let j = 0; j < cols.length; j++) {
+                let targetColIndex = startColIndex + j;
+                if (targetColIndex < 5) {
+                    let targetTd = targetRow.children[targetColIndex];
+                    if (targetTd) {
+                        targetTd.innerText = cols[j].trim();
+                    }
                 }
             }
-        });
-
-        for(let i = 0; i < 3; i++) {
-            newHtml += `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`;
+        }
+        
+        for(let i = 0; i < 2; i++) {
+            tbody.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`);
         }
 
-        tbody.insertAdjacentHTML('beforeend', newHtml);
         document.getElementById('excelFile').value = "";
+        saveGridState();
       });
 
-      document.getElementById('excelFile').addEventListener('change', function() {
-        initEmptyGrid(5);
+      document.getElementById('excelFile').addEventListener('change', function(e) {
+         let fileInput = document.getElementById('excelFile');
+         if(fileInput.files.length > 0) {
+             let reader = new FileReader();
+             reader.onload = function(evt) {
+                 let data = new Uint8Array(evt.target.result);
+                 let workbook = XLSX.read(data, {type: 'array'});
+                 let firstSheetName = workbook.SheetNames[0];
+                 let worksheet = workbook.Sheets[firstSheetName];
+                 let json = XLSX.utils.sheet_to_json(worksheet);
+                 
+                 let tbody = document.getElementById('pasteGridBody');
+                 tbody.innerHTML = '';
+                 
+                 json.forEach(row => {
+                     let name = row.NAME || row.Name || "";
+                     let cpu = row.CPU || row.BUY_PRICE || "";
+                     let mrp = row.MRP || row.SALE_PRICE || "";
+                     let qty = row.QTY || row.Qty || "";
+                     let brand = row.BRAND || row.Brand || "";
+                     tbody.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true">${name}</td><td contenteditable="true">${cpu}</td><td contenteditable="true">${mrp}</td><td contenteditable="true">${qty}</td><td contenteditable="true">${brand}</td></tr>`);
+                 });
+                 
+                 for(let i = 0; i < 2; i++) {
+                    tbody.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>`);
+                 }
+                 saveGridState();
+             };
+             reader.readAsArrayBuffer(fileInput.files[0]);
+         }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) {
+            e.preventDefault();
+            if (undoStack.length > 1) { 
+                let currentState = undoStack.pop();
+                redoStack.push(currentState);
+                document.getElementById('pasteGridBody').innerHTML = undoStack[undoStack.length - 1];
+            }
+        }
+        if (e.ctrlKey && (e.key === 'y' || e.key === 'Y')) {
+            e.preventDefault();
+            if (redoStack.length > 0) {
+                let nextState = redoStack.pop();
+                undoStack.push(nextState);
+                document.getElementById('pasteGridBody').innerHTML = nextState;
+            }
+        }
+      });
+
+      document.getElementById('pasteGridTable').addEventListener('keydown', function(e) {
+        let target = e.target;
+        if (target.tagName === 'TD' && target.isContentEditable) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                let tr = target.parentElement; 
+                let cellIndex = Array.from(tr.children).indexOf(target); 
+                let nextTr = tr.nextElementSibling; 
+                if (nextTr) {
+                    let nextCell = nextTr.children[cellIndex];
+                    if (nextCell) {
+                        nextCell.focus();
+                    }
+                }
+            }
+        }
       });
     }
 
@@ -292,25 +460,27 @@
       let gridRows = document.querySelectorAll('#pasteGridBody tr');
       gridRows.forEach(row => {
           let cells = row.querySelectorAll('td');
-          if(cells.length >= 3) {
+          if(cells.length >= 5) {
               let name = cells[0].innerText.trim();
               let cpu = cells[1].innerText.trim();
               let mrp = cells[2].innerText.trim();
+              let qty = cells[3].innerText.trim();
+              let brand = cells[4].innerText.trim();
               
-              if(name !== '' || cpu !== '' || mrp !== '') {
-                  pastedData.push({ NAME: name, CPU: cpu, MRP: mrp });
+              if(name !== '' || cpu !== '' || mrp !== '' || qty !== '' || brand !== '') {
+                  pastedData.push({ NAME: name, CPU: cpu, MRP: mrp, QTY: qty, BRAND: brand });
               }
           }
       });
 
       if (!fileInput.files.length && pastedData.length === 0) {
-        alert("Please select an Excel file OR paste data into the grid first!");
+        alert("Please paste data into the grid or upload a file first!");
         return;
       }
 
       let btn = document.getElementById('previewBtn');
       let originalBtnText = btn.innerHTML;
-      btn.innerHTML = "⏳ Fetching Last Barcode...";
+      btn.innerHTML = "&#8987; Fetching Last Barcode...";
       btn.disabled = true;
 
       fetch(SCRIPT_URL + "?action=getLastBarcode")
@@ -324,21 +494,7 @@
              if(textData && textData.length < 20) lastBarcode = textData.replace(/['"]/g, '');
            }
 
-           if (fileInput.files.length > 0) {
-               let file = fileInput.files[0];
-               let reader = new FileReader();
-               reader.onload = function(e) {
-                 let data = new Uint8Array(e.target.result);
-                 let workbook = XLSX.read(data, {type: 'array'});
-                 let firstSheetName = workbook.SheetNames[0];
-                 let worksheet = workbook.Sheets[firstSheetName];
-                 let json = XLSX.utils.sheet_to_json(worksheet);
-                 renderDataToPreview(json, lastBarcode, btn, originalBtnText);
-               };
-               reader.readAsArrayBuffer(file);
-           } else {
-               renderDataToPreview(pastedData, lastBarcode, btn, originalBtnText);
-           }
+           renderDataToPreview(pastedData, lastBarcode, btn, originalBtnText);
         })
         .catch(err => {
            alert("Failed to fetch Last Barcode from POS!");
@@ -374,13 +530,42 @@
         let name = row.NAME || row.Name || "";
         let cpu = row.CPU || row.BUY_PRICE || 0;
         let mrp = row.MRP || row.SALE_PRICE || 0;
+        let qty = row.QTY || row.Qty || 1;
+        let brandInput = row.BRAND || row.Brand || "";
+        
+        let matchedBrand = null;
+        if (brandInput) {
+          matchedBrand = globalBrands.find(b => 
+            b.BRAND_NAME.toLowerCase() === brandInput.toLowerCase() || 
+            b.BRAND_NAME.toLowerCase().includes(brandInput.toLowerCase())
+          );
+        }
+        
+        if (matchedBrand) {
+          row.FINAL_BRAND_CODE = matchedBrand.CODE;
+        } else {
+          row.FINAL_BRAND_CODE = null; 
+        }
+
+        let brandOptionsHtml = '<option value="">-- Select Brand --</option>';
+        globalBrands.forEach(b => {
+          let selected = (matchedBrand && matchedBrand.CODE === b.CODE) ? "selected" : "";
+          brandOptionsHtml += `<option value="${b.CODE}" ${selected}>${b.BRAND_NAME} (${b.CODE})</option>`;
+        });
+
+        let selectStyle = "width:100%;";
 
         tr.innerHTML = `
           <td style="font-weight: bold; color: #d32f2f;">${finalBarcode}</td>
           <td style="text-align: left;">${name}</td>
-          <td></td>
+          <td>${qty}</td>
           <td>${cpu}</td>
           <td>${mrp}</td>
+          <td>
+            <select class="preview-brand-select" data-index="${index}" style="${selectStyle}" onchange="updateRowBrand(this)">
+              ${brandOptionsHtml}
+            </select>
+          </td>
           <td id="status-${index}" style="font-weight:bold; color:gray;">Pending</td>
         `;
         tbody.appendChild(tr);
@@ -390,37 +575,74 @@
       document.getElementById('previewSection').style.display = 'block';
       document.getElementById('actionButtons').style.display = 'flex';
       document.getElementById('saveToPosBtn').style.display = 'inline-block';
+      document.getElementById('addQtyBtn').style.display = 'none';
+      document.getElementById('showChannelBtn').style.display = 'none';
+      
+      $('.preview-brand-select').select2({
+         width: '100%'
+      });
+
+      $('.preview-brand-select').each(function() {
+          if (!$(this).val()) {
+              $(this).next('.select2-container').find('.select2-selection').css('border', '2px solid red');
+          }
+      });
+
+      validateSaveButton(); 
       
       setTimeout(() => {
         document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 150);
 
-      btn.innerHTML = "✅ Preview Updated";
+      btn.innerHTML = "&#9989; Preview Updated";
       btn.disabled = false;
     }
 
-    async function startUploadProcess() {
-      if (globalExcelData.length === 0) {
-        alert("No data to upload!");
-        return;
+    function updateRowBrand(selectElem) {
+      let index = selectElem.getAttribute('data-index');
+      let selectedCode = selectElem.value;
+      
+      let select2Container = $(selectElem).next('.select2-container').find('.select2-selection');
+
+      if (selectedCode) {
+        globalExcelData[index].FINAL_BRAND_CODE = selectedCode;
+        select2Container.css('border', '1px solid #ccc'); 
+      } else {
+        globalExcelData[index].FINAL_BRAND_CODE = null;
+        select2Container.css('border', '2px solid red'); 
       }
+      
+      validateSaveButton();
+    }
+
+    function validateSaveButton() {
+      let allValid = true;
+      for (let i = 0; i < globalExcelData.length; i++) {
+        if (!globalExcelData[i].FINAL_BRAND_CODE) {
+          allValid = false;
+          break;
+        }
+      }
+      
+      let saveBtn = document.getElementById('saveToPosBtn');
+      if (allValid && globalExcelData.length > 0) {
+        saveBtn.style.display = 'inline-block';
+      } else {
+        saveBtn.style.display = 'none';
+      }
+    }
+
+    async function startUploadProcess() {
+      if (globalExcelData.length === 0) return;
 
       let category = document.getElementById('categoryDD').value;
       let subCategory = document.getElementById('subCategoryDD').value;
-      let brand = document.getElementById('brandDD').value;
-      
       let vendorSelect = document.getElementById('vendorDD');
       let vendorCode = vendorSelect.value;
       let vendorName = vendorSelect.options[vendorSelect.selectedIndex] ? vendorSelect.options[vendorSelect.selectedIndex].text.split(" (")[0] : "";
-      
       let countryValue = document.getElementById('countryDD').value;
 
-      if (!subCategory || !brand || !vendorCode || !countryValue) {
-        alert("Please ensure Sub Category, Brand, Vendor, and Country are selected!");
-        return;
-      }
-
-      document.getElementById('actionButtons').style.display = 'none';
+      document.getElementById('saveToPosBtn').style.display = 'none';
       let progressMsg = document.getElementById('progressMsg');
       progressMsg.style.display = 'block';
 
@@ -428,7 +650,7 @@
 
       for (let i = 0; i < globalExcelData.length; i++) {
         let row = globalExcelData[i];
-        progressMsg.innerHTML = `⏳ Uploading item ${i + 1} of ${globalExcelData.length}...`;
+        progressMsg.innerHTML = `&#8987; Uploading item ${i + 1} of ${globalExcelData.length}...`;
         let statusCell = document.getElementById(`status-${i}`);
         statusCell.innerHTML = "Uploading...";
         statusCell.style.color = "#ff9800";
@@ -443,7 +665,7 @@
           "CATEGORY_CODE": category, 
           "NAME": row.NAME || row.Name || "", 
           "SUB_CATEGORY_CODE": subCategory, 
-          "BRAND_CODE": brand, 
+          "BRAND_CODE": row.FINAL_BRAND_CODE, 
           "LAST_PUR_PRICE": String(row.CPU || row.BUY_PRICE || 0), 
           "MRP": String(row.MRP || row.SALE_PRICE || 0), 
           "STATUS": "N", "IS_SCALE": 0, "IS_DISC_EXEMPTION": 0, "IS_NOT_FOR_SALE": 0, 
@@ -460,46 +682,170 @@
             method: 'POST',
             body: JSON.stringify(payload)
           });
-          
           let result = await response.json();
-          
           if (result.success) {
-            statusCell.innerHTML = "✅ Success";
+            statusCell.innerHTML = "&#9989; Success";
             statusCell.style.color = "#4CAF50";
             successCount++;
           } else {
-            statusCell.innerHTML = "❌ Failed";
+            statusCell.innerHTML = "&#10060; Failed";
             statusCell.style.color = "#f44336";
           }
         } catch (error) {
-          statusCell.innerHTML = "❌ Error";
+          statusCell.innerHTML = "&#10060; Error";
           statusCell.style.color = "#f44336";
         }
       }
 
-      progressMsg.innerHTML = `🎉 Upload Complete! ${successCount} out of ${globalExcelData.length} items saved to POS.`;
+      progressMsg.innerHTML = `&#127881; Upload Complete! ${successCount} products saved. Ready to add QTY.`;
       progressMsg.style.color = "#4CAF50";
       
-      document.getElementById('actionButtons').style.display = 'flex';
-      document.getElementById('saveToPosBtn').style.display = 'none';
+      if(successCount > 0) {
+         document.getElementById('addQtyBtn').style.display = 'inline-block';
+      }
       
       setTimeout(() => {
         downloadPreviewExcel();
       }, 1500);
     }
 
+    function getFormattedDate() {
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        let d = new Date();
+        return ("0" + d.getDate()).slice(-2) + "-" + monthNames[d.getMonth()] + "-" + d.getFullYear();
+    }
+
+    async function processAddQty() {
+        document.getElementById('addQtyBtn').style.display = 'none';
+        let progressMsg = document.getElementById('progressMsg');
+        progressMsg.innerHTML = `&#8987; Pushing Quantity to POS Stock...`;
+        progressMsg.style.color = "#ff9800";
+
+        let vendorCode = document.getElementById('vendorDD').value;
+        let dateToday = getFormattedDate(); 
+        let payloadList = [];
+        let totalValue = 0;
+
+        for (let i = 0; i < globalExcelData.length; i++) {
+            let row = globalExcelData[i];
+            let cpu = parseFloat(row.CPU || 0);
+            let mrp = parseFloat(row.MRP || 0);
+            let qty = parseFloat(row.QTY || 1); 
+            let val = cpu * qty;
+            totalValue += val;
+
+            payloadList.push({
+                "selected": true,
+                "DISPLAY_NAME": row.NAME || "",
+                "PUR_UOM_NAME": "PCS",
+                "PUR_PRICE": cpu,
+                "USER_BARCODE1": row.FINAL_BARCODE,
+                "USER_BARCODE": row.FINAL_BARCODE,
+                "BARCODE": row.FINAL_BARCODE,
+                "RCV_QTY": qty,
+                "VALUE": val,
+                "RCV_VAT": 0,
+                "RCV_AMOUNT_WITHOUT_VAT": val,
+                "RCV_AMOUNT": val,
+                "IS_MANUFACTURE_DT_REQUIRED": 0,
+                "IS_EXPIRY_ITEM": 0,
+                "SAL_PRICE": mrp,
+                "BARCODE_INCLUDE": "",
+                "IS_CARTON": false,
+                "IS_PRICE_INCLD_VAT": 0,
+                "RCV_PRICE": cpu,
+                "is_gift": false,
+                "CONVERTION_RATE": 1,
+                "CPU": cpu,
+                "IS_PUR_PRICE_INCLD_VAT": false,
+                "PUR_VAT_PERCENT": 0,
+                "SAL_VAT_PERCENT": 7.5,
+                "BATCH_NO": null,
+                "ALLOW_MANUAL_BATCH_INPUT": false,
+                "CARTON_SIZE": 1,
+                "PURCHASE_DATE": dateToday,
+                "IS_BATCH_REQUIRED": false,
+                "IS_BATCH_AUTO_SERIAL": false,
+                "PROFIT_PRCNT": 0,
+                "PROFIT_PRCNT_ON_MRP": 0,
+                "COMPANY_CODE": "10001",
+                "STORE_CODE": "100010001",
+                "VENDOR_CODE": vendorCode,
+                "ORDER_NO": "DIRECT"
+            });
+        }
+
+        let finalPayload = {
+            "ORDER_NO": "DIRECT",
+            "VENDOR_CODE": vendorCode,
+            "PURCHASE_DATE": dateToday,
+            "TOTAL_VALUE": totalValue,
+            "ADDITIONAL_COST": 0,
+            "AUTO_DELIVER": false,
+            "COMPANY_CODE": "10001",
+            "DISCOUNT_AMT": 0,
+            "MANAGE_VENDORWISE_STOCK": true,
+            "NET_AMOUNT": totalValue,
+            "STORE_CODE": "100010001",
+            "SUB_TOTAL": totalValue,
+            "TOTAL_VAT": 0,
+            "PurchaseReceiveDetailList": payloadList
+        };
+
+        try {
+            let response = await fetch(SCRIPT_URL + "?action=addQuantity", {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    action: "addQty", 
+                    tempPayload: payloadList, 
+                    finalPayload: finalPayload 
+                })
+            });
+            let result = await response.json();
+            
+            if (result.success) {
+                progressMsg.innerHTML = `&#127881; Stock Added Successfully!`;
+                progressMsg.style.color = "#4CAF50";
+                
+                let channelBtn = document.getElementById('showChannelBtn');
+                channelBtn.style.display = 'inline-block';
+                if(result.filename) {
+                    channelBtn.setAttribute('data-url', "http://103.87.213.56/PFF" + result.filename);
+                }
+            } else {
+                 progressMsg.innerHTML = `&#10060; Failed to Add Stock: ` + (result.message || '');
+                 progressMsg.style.color = "#f44336";
+                 document.getElementById('addQtyBtn').style.display = 'inline-block';
+            }
+        } catch(e) {
+             progressMsg.innerHTML = `&#10060; Error Adding Stock: Network issue or API setup pending.`;
+             progressMsg.style.color = "#f44336";
+             document.getElementById('addQtyBtn').style.display = 'inline-block';
+        }
+    }
+
+    function openChallanPdf() {
+        let url = document.getElementById('showChannelBtn').getAttribute('data-url');
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+            alert("PDF URL is not available yet.");
+        }
+    }
+
     function downloadPreviewExcel() {
       if(globalExcelData.length === 0) return;
       let wsData = [];
-      wsData.push(["Barcode", "Name", "Qty", "CPU", "MRP"]); 
+      wsData.push(["Barcode", "Name", "Qty", "CPU", "MRP", "Brand"]); 
       
       globalExcelData.forEach(row => {
         wsData.push([
           row.FINAL_BARCODE, 
           row.NAME || row.Name || "", 
-          "", 
+          row.QTY || row.Qty || 1, 
           row.CPU || row.BUY_PRICE || "", 
-          row.MRP || row.SALE_PRICE || ""
+          row.MRP || row.SALE_PRICE || "",
+          row.BRAND || row.Brand || ""
         ]);
       });
 

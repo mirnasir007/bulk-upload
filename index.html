@@ -703,12 +703,6 @@
       if(successCount > 0) {
          document.getElementById('addQtyBtn').style.display = 'inline-block';
       }
-      
-      setTimeout(() => {
-        downloadPreviewExcel();
-      }, 1500);
-    }
-
     function getFormattedDate() {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         let d = new Date();

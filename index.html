@@ -633,7 +633,7 @@
 
       if (allValid && globalExcelData.length > 0) {
         saveBtn.style.display = 'inline-block';
-        printBtn.style.display = 'inline-block';
+        // Print Batton Hide
       } else {
         saveBtn.style.display = 'none';
         printBtn.style.display = 'none';
@@ -764,7 +764,7 @@
       
       if(successCount > 0) {
          document.getElementById('addQtyBtn').style.display = 'inline-block';
-         document.getElementById('printBarcodeBtn').style.display = 'inline-block';
+         // Print hide, wait for Add Qty
       }
     }
 
@@ -868,6 +868,10 @@
                 
                 let channelBtn = document.getElementById('showChannelBtn');
                 channelBtn.style.display = 'inline-block';
+                
+                // New logic: Print Barcode button will show after QTY is added
+                document.getElementById('printBarcodeBtn').style.display = 'inline-block';
+
                 if(result.filename) {
                     channelBtn.setAttribute('data-url', "http://103.87.213.56/PFF" + result.filename);
                 }

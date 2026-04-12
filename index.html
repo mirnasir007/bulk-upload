@@ -676,7 +676,7 @@
     }
 
     function printBarcodes(labels) { 
-        var perPage = 60; // Fixed to 60 for perfect 5x12 grid fit
+        var perPage = 65; // Fixed to 65 for perfect 5x12 grid fit
         var htmlContent = ''; 
         for (var i = 0; i < labels.length; i += perPage) { 
             var pageLabels = labels.slice(i, i + perPage); 

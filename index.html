@@ -172,7 +172,8 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuZaImIlFPwqjVdVZ-DX0ZKweSfRYylj9rEGaAXvc8feIanuU2385Unh8Rt12zDBj-/exec"; 
+    // Change this to your deployed Node.js server URL if hosted online
+    const SCRIPT_URL = "https://pos-bulk-uploader-backend.onrender.com/api"; 
     let globalExcelData = [];
     let globalBrands = []; 
     let undoStack = [];
@@ -220,7 +221,7 @@
         }
       });
 
-      fetch(SCRIPT_URL + "?action=getDropdowns")
+      fetch(SCRIPT_URL + "/dropdowns")
         .then(res => res.json())
         .then(data => {
           if(data.success) {
@@ -486,7 +487,7 @@
       btn.innerHTML = "&#8987; Fetching Last Barcode...";
       btn.disabled = true;
 
-      fetch(SCRIPT_URL + "?action=getLastBarcode")
+      fetch(SCRIPT_URL + "/last-barcode")
         .then(res => res.text())
         .then(textData => {
            let lastBarcode = "A00000"; 
@@ -753,8 +754,9 @@
         };
 
         try {
-          let response = await fetch(SCRIPT_URL, {
+          let response = await fetch(SCRIPT_URL + "/save-product", {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
           let result = await response.json();
@@ -865,10 +867,10 @@
         };
 
         try {
-            let response = await fetch(SCRIPT_URL + "?action=addQuantity", {
+            let response = await fetch(SCRIPT_URL + "/add-qty", {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    action: "addQty", 
                     tempPayload: payloadList, 
                     finalPayload: finalPayload 
                 })
